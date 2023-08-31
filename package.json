@@ -26,9 +26,11 @@
     }
   },
   "dependencies": {
+    "@types/three": "^0.155.1",
     "pinia": "^2.1.6",
     "postcss-preset-env": "^9.1.0",
     "prettier": "^3.0.0",
+    "three": "0.148.0",
     "vue": "^3.3.4",
     "vue-router": "4",
     "windicss": "^3.5.6"
