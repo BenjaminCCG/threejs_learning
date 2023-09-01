@@ -29,6 +29,41 @@ const initRender = () => {
   // 创建3D场景对象Scene
   const scene = new THREE.Scene();
 
+  // 创建一个长方体几何对象Geometry
+  // const geometry = new THREE.PlaneGeometry(100, 50);
+  const geometry = new THREE.BoxGeometry(50, 50, 50); // 长方体
+  // const geometry = new THREE.PlaneGeometry(100, 50, 2, 1);
+  // const geometry = new THREE.PlaneGeometry(100, 50, 2, 2);
+  // const geometry = new THREE.SphereGeometry(50, 32, 16);
+  // const geometry = new THREE.SphereGeometry(15, 8, 8);
+  // new THREE.Vector3()实例化一个三维向量对象
+
+  const material = new THREE.MeshPhongMaterial({
+    side: THREE.DoubleSide,
+    // color: 0xff0000,
+    wireframe: true, // 线条模式渲染mesh对应的三角形数据
+    shininess: 20, // 高光部分的亮度，默认30
+    specular: 0x444444 // 高光部分的颜色
+  });
+  // console.log('🚀 ~ file: index.vue:48 ~ initRender ~ material:', material.color);
+  // // 创建一个颜色对象
+  // const color = new THREE.Color(); // 默认是纯白色0xffffff。
+  // console.log('查看颜色对象结构', color); // 可以查看rgb的值
+
+  // 两个参数分别为几何体geometry、材质material
+  const mesh = new THREE.Mesh(geometry, material); // 网格模型对象Mesh
+  console.log('🚀 ~ file: index.vue:55 ~ initRender ~ mesh:', mesh);
+  // mesh.translateX(100); //
+  // mesh.scale.set(0.5, 1.5, 2);
+  const mesh2 = mesh.clone();
+  console.log('🚀 ~ file: index.vue:59 ~ initRender ~ mesh2:', mesh2);
+
+  // 创建一个欧拉对象，表示绕着xyz轴分别旋转45度，0度，90度
+  const Euler = new THREE.Euler(Math.PI / 4, 0, Math.PI / 2);
+
+  // mesh.rotation.x += Euler.x;
+  mesh.rotateX(Euler.x);
+
   // 环境光设置
   const ambient = new THREE.AmbientLight(0xffffff, 0.4);
   scene.add(ambient);
@@ -49,44 +84,23 @@ const initRender = () => {
   const dirLightHelper = new THREE.DirectionalLightHelper(directionalLight, 5, 0xff0000);
   scene.add(dirLightHelper);
 
-  // 创建两个网格模型mesh1、mesh2
-  const geometry = new THREE.BoxGeometry(20, 20, 20);
-  const material = new THREE.MeshLambertMaterial({ color: 0x00ffff });
-  const group = new THREE.Group();
-  const mesh1 = new THREE.Mesh(geometry, material);
-  const mesh2 = new THREE.Mesh(geometry, material);
-  const mesh3 = new THREE.Mesh(geometry, material);
-  mesh2.translateX(25);
-  mesh3.translateX(50);
-  // 把mesh1型插入到组group中，mesh1作为group的子对象
-  mesh1.add(mesh3);
-  group.add(mesh1);
-  // 把mesh2型插入到组group中，mesh2作为group的子对象
-  group.add(mesh2);
-  // 把group插入到场景中作为场景子对象
-  scene.add(group);
-
-  group.translateY(100);
-  group.scale.set(4, 4, 4);
-  group.rotateX(Math.PI / 6);
-  group.name = '小区';
-  mesh1.name = '一号楼';
-  scene.name = 'China';
-  console.log('查看group的子对象', group, mesh1, scene, group.children);
-  console.log('查看Scene的子对象', scene.children);
-
+  // 设置网格模型在三维空间中的位置坐标，默认是坐标原点
+  mesh.position.set(100, 10, 0);
+  mesh2.copy(mesh);
+  scene.add(mesh2);
+  scene.add(mesh);
   // 实例化一个透视投影相机对象
   const width = window.innerWidth; // 宽度
   const height = window.innerHeight; // 高度
   // 30:视场角度, width / height:Canvas画布宽高比, 1:近裁截面, 3000：远裁截面
 
   const camera = new THREE.PerspectiveCamera(60, width / height, 1, 6000);
-  camera.position.set(200, 200, 200);
-  // camera.position.set(800, 800, 800);
+  // camera.position.set(200, 200, 200);
+  camera.position.set(800, 800, 800);
   // camera.position.set(2000, 2000, 2000);
   // camera.lookAt(0, 0, 0);
   // camera.lookAt(1000, 0, 1000);
-  camera.lookAt(group.position);
+  camera.lookAt(mesh.position);
   const renderer = new THREE.WebGLRenderer({
     antialias: true
   });
@@ -117,7 +131,7 @@ const initRender = () => {
     // console.log('两帧渲染时间间隔(毫秒)', spt);
     // console.log('帧率FPS', 1000 / spt);
     renderer.render(scene, camera); // 执行渲染操作
-    group.rotateY(0.01); // 每次绕y轴旋转0.01弧度
+    mesh.rotateY(0.01); // 每次绕y轴旋转0.01弧度
     requestAnimationFrame(render); // 请求再次执行渲染函数render，渲染下一帧
   }
   render();

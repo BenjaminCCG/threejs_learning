@@ -7,6 +7,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import Stats from 'three/addons/libs/stats.module.js';
 // 引入dat.gui.js的一个类GUI
+import { GUI } from 'three/addons/libs/lil-gui.module.min.js';
 
 // const initGui = () => {
 //   const gui = new GUI();
@@ -29,14 +30,122 @@ const initRender = () => {
   // 创建3D场景对象Scene
   const scene = new THREE.Scene();
 
+  // 创建一个长方体几何对象Geometry
+  const geometry = new THREE.BoxGeometry(100, 100, 100);
+
+  // SphereGeometry：球体
+  // const geometry = new THREE.SphereGeometry(50);
+
+  // CylinderGeometry：圆柱
+  // const geometry = new THREE.CylinderGeometry(0, 50, 100);
+
+  // PlaneGeometry：矩形平面
+  // const geometry = new THREE.PlaneGeometry(100, 50, 10, 20);
+
+  // const geometry = new THREE.CircleGeometry(50);
+
+  const material = new THREE.MeshPhongMaterial({
+    side: THREE.DoubleSide,
+    color: 0xff0000,
+    shininess: 20, // 高光部分的亮度，默认30
+    specular: 0x444444 // 高光部分的颜色
+  });
+
+  // 材质对象Material
+  // const material = new THREE.MeshLambertMaterial({
+  //   color: 0x00ffff, // 设置材质颜色
+  //   transparent: true, // 开启透明
+  //   opacity: 0.5 // 设置透明度
+  // });
+
+  // 两个参数分别为几何体geometry、材质material
+  const mesh = new THREE.Mesh(geometry, material); // 网格模型对象Mesh
+
+  // for (let i = 0; i < 10; i++) {
+  //   for (let j = 0; j < 10; j++) {
+  //     const mesh = new THREE.Mesh(geometry, material); // 网格模型对象Mesh
+  //     // 在XOZ平面上分布
+  //     mesh.position.set(i * 200, 0, j * 200);
+  //     scene.add(mesh); // 网格模型添加到场景中
+  //   }
+  // }
+  // // 点光源位置
+  // const pointLight = new THREE.PointLight(0xffffff, 1, 0, 0);
+
+  // pointLight.position.set(-400, -200, -300); // 点光源放在x轴上
+  // const pointLightHelper = new THREE.PointLightHelper(pointLight, 10); // 点光源辅助观察工具
+  // scene.add(pointLightHelper);
+  // scene.add(pointLight);
+
   // 环境光设置
   const ambient = new THREE.AmbientLight(0xffffff, 0.4);
   scene.add(ambient);
 
+  const gui = new GUI();
+  const obj = {
+    color: 0x00ffff,
+    scale: 0,
+    bool: false,
+    specular: 0x00ffff
+  };
+  // 光照强度属性.intensity
+  // 通过GUI改变mesh.position对象的xyz属性
+  const matFolder = gui.addFolder('材质');
+  // matFolder.close();
+  matFolder.addColor(obj, 'color').onChange((value: string) => {
+    material.color.set(value);
+  });
+  // 材质高光颜色specular
+  matFolder.addColor(obj, 'specular').onChange((value: string) => {
+    material.specular.set(value);
+  });
+
+  // 环境光子菜单
+  const ambientFolder = gui.addFolder('环境光');
+  ambientFolder
+    .add(ambient, 'intensity', 0, 2.0)
+    .name('环境光强度')
+    .step(0.1)
+    .onChange((e: number) => {
+      console.log(e);
+    });
+
+  const dirFolder = gui.addFolder('平行光');
+  const dirFolder2 = dirFolder.addFolder('位置');
+  dirFolder2.add(mesh.position, 'x', 0, 180);
+  dirFolder2.add(mesh.position, 'y', 0, 180);
+  dirFolder2.add(mesh.position, 'z', 0, 180);
+
   // gui.addColor(obj, 'color').onChange((value: string) => {
   //   mesh.material.color.set(value);
   // });
+  dirFolder
+    .add(obj, 'scale', [-100, 0, 100])
+    .name('y坐标')
+    .onChange((value: number) => {
+      mesh.position.y = value;
+    });
 
+  dirFolder
+    .add(obj, 'scale', {
+      left: -100,
+      center: 0,
+      right: 100
+      // 左: -100,//可以用中文
+      // 中: 0,
+      // 右: 100
+    })
+    .name('位置选择')
+    .onChange((value: number) => {
+      mesh.position.x = value;
+    });
+
+  dirFolder
+    .add(obj, 'bool')
+    .name('饿了')
+    .onChange((v: boolean) => {
+      console.log(v);
+    });
   // 平行光
   const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
   // 设置光源的方向：通过光源position属性和目标指向对象的position属性计算
@@ -48,45 +157,23 @@ const initRender = () => {
   // 平行光辅助对象
   const dirLightHelper = new THREE.DirectionalLightHelper(directionalLight, 5, 0xff0000);
   scene.add(dirLightHelper);
+  dirFolder.add(directionalLight, 'intensity', 0, 2.0).name('平行光强度').step(0.1);
 
-  // 创建两个网格模型mesh1、mesh2
-  const geometry = new THREE.BoxGeometry(20, 20, 20);
-  const material = new THREE.MeshLambertMaterial({ color: 0x00ffff });
-  const group = new THREE.Group();
-  const mesh1 = new THREE.Mesh(geometry, material);
-  const mesh2 = new THREE.Mesh(geometry, material);
-  const mesh3 = new THREE.Mesh(geometry, material);
-  mesh2.translateX(25);
-  mesh3.translateX(50);
-  // 把mesh1型插入到组group中，mesh1作为group的子对象
-  mesh1.add(mesh3);
-  group.add(mesh1);
-  // 把mesh2型插入到组group中，mesh2作为group的子对象
-  group.add(mesh2);
-  // 把group插入到场景中作为场景子对象
-  scene.add(group);
-
-  group.translateY(100);
-  group.scale.set(4, 4, 4);
-  group.rotateX(Math.PI / 6);
-  group.name = '小区';
-  mesh1.name = '一号楼';
-  scene.name = 'China';
-  console.log('查看group的子对象', group, mesh1, scene, group.children);
-  console.log('查看Scene的子对象', scene.children);
-
+  // 设置网格模型在三维空间中的位置坐标，默认是坐标原点
+  mesh.position.set(100, 10, 0);
+  scene.add(mesh);
   // 实例化一个透视投影相机对象
   const width = window.innerWidth; // 宽度
   const height = window.innerHeight; // 高度
   // 30:视场角度, width / height:Canvas画布宽高比, 1:近裁截面, 3000：远裁截面
 
   const camera = new THREE.PerspectiveCamera(60, width / height, 1, 6000);
-  camera.position.set(200, 200, 200);
-  // camera.position.set(800, 800, 800);
+  // camera.position.set(200, 200, 200);
+  camera.position.set(800, 800, 800);
   // camera.position.set(2000, 2000, 2000);
   // camera.lookAt(0, 0, 0);
   // camera.lookAt(1000, 0, 1000);
-  camera.lookAt(group.position);
+  camera.lookAt(mesh.position);
   const renderer = new THREE.WebGLRenderer({
     antialias: true
   });
@@ -117,7 +204,7 @@ const initRender = () => {
     // console.log('两帧渲染时间间隔(毫秒)', spt);
     // console.log('帧率FPS', 1000 / spt);
     renderer.render(scene, camera); // 执行渲染操作
-    group.rotateY(0.01); // 每次绕y轴旋转0.01弧度
+    // mesh.rotateY(0.01); // 每次绕y轴旋转0.01弧度
     requestAnimationFrame(render); // 请求再次执行渲染函数render，渲染下一帧
   }
   render();

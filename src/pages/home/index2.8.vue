@@ -29,6 +29,70 @@ const initRender = () => {
   // 创建3D场景对象Scene
   const scene = new THREE.Scene();
 
+  // 创建一个长方体几何对象Geometry
+  // const geometry = new THREE.PlaneGeometry(100, 50);
+  const geometry = new THREE.BoxGeometry(50, 50, 50); // 长方体
+  // const geometry = new THREE.PlaneGeometry(100, 50, 2, 1);
+  // const geometry = new THREE.PlaneGeometry(100, 50, 2, 2);
+  // const geometry = new THREE.SphereGeometry(50, 32, 16);
+  // const geometry = new THREE.SphereGeometry(15, 8, 8);
+  console.log('顶点位置数据', geometry.attributes.position);
+  geometry.scale(2, 2, 2);
+  // 几何体沿着x轴平移50
+  // geometry.translate(50, 0, 0);
+  // // 几何体绕着x轴旋转45度
+  // geometry.rotateX(Math.PI / 4);
+  // 几何体旋转、缩放或平移之后，查看几何体顶点位置坐标的变化
+  // BufferGeometry的旋转、缩放、平移等方法本质上就是改变顶点的位置坐标
+  console.log('顶点位置数据', geometry.attributes.position);
+  // console.log('几何体', geometry);
+  // console.log('顶点位置数据', geometry.attributes.position);
+  // console.log('顶点索引数据', geometry.index);
+  // SphereGeometry：球体
+  // const geometry = new THREE.SphereGeometry(50);
+
+  // CylinderGeometry：圆柱
+  // const geometry = new THREE.CylinderGeometry(0, 50, 100);
+
+  // PlaneGeometry：矩形平面
+  // const geometry = new THREE.PlaneGeometry(100, 50, 10, 20);
+
+  // const geometry = new THREE.CircleGeometry(50);
+
+  const material = new THREE.MeshPhongMaterial({
+    side: THREE.DoubleSide,
+    color: 0xff0000,
+    wireframe: true, // 线条模式渲染mesh对应的三角形数据
+    shininess: 20, // 高光部分的亮度，默认30
+    specular: 0x444444 // 高光部分的颜色
+  });
+
+  // 材质对象Material
+  // const material = new THREE.MeshLambertMaterial({
+  //   color: 0x00ffff, // 设置材质颜色
+  //   transparent: true, // 开启透明
+  //   opacity: 0.5 // 设置透明度
+  // });
+
+  // 两个参数分别为几何体geometry、材质material
+  const mesh = new THREE.Mesh(geometry, material); // 网格模型对象Mesh
+
+  // for (let i = 0; i < 10; i++) {
+  //   for (let j = 0; j < 10; j++) {
+  //     const mesh = new THREE.Mesh(geometry, material); // 网格模型对象Mesh
+  //     // 在XOZ平面上分布
+  //     mesh.position.set(i * 200, 0, j * 200);
+  //     scene.add(mesh); // 网格模型添加到场景中
+  //   }
+  // }
+  // // 点光源位置
+  // const pointLight = new THREE.PointLight(0xffffff, 1, 0, 0);
+
+  // pointLight.position.set(-400, -200, -300); // 点光源放在x轴上
+  // const pointLightHelper = new THREE.PointLightHelper(pointLight, 10); // 点光源辅助观察工具
+  // scene.add(pointLightHelper);
+  // scene.add(pointLight);
+
   // 环境光设置
   const ambient = new THREE.AmbientLight(0xffffff, 0.4);
   scene.add(ambient);
@@ -49,44 +113,21 @@ const initRender = () => {
   const dirLightHelper = new THREE.DirectionalLightHelper(directionalLight, 5, 0xff0000);
   scene.add(dirLightHelper);
 
-  // 创建两个网格模型mesh1、mesh2
-  const geometry = new THREE.BoxGeometry(20, 20, 20);
-  const material = new THREE.MeshLambertMaterial({ color: 0x00ffff });
-  const group = new THREE.Group();
-  const mesh1 = new THREE.Mesh(geometry, material);
-  const mesh2 = new THREE.Mesh(geometry, material);
-  const mesh3 = new THREE.Mesh(geometry, material);
-  mesh2.translateX(25);
-  mesh3.translateX(50);
-  // 把mesh1型插入到组group中，mesh1作为group的子对象
-  mesh1.add(mesh3);
-  group.add(mesh1);
-  // 把mesh2型插入到组group中，mesh2作为group的子对象
-  group.add(mesh2);
-  // 把group插入到场景中作为场景子对象
-  scene.add(group);
-
-  group.translateY(100);
-  group.scale.set(4, 4, 4);
-  group.rotateX(Math.PI / 6);
-  group.name = '小区';
-  mesh1.name = '一号楼';
-  scene.name = 'China';
-  console.log('查看group的子对象', group, mesh1, scene, group.children);
-  console.log('查看Scene的子对象', scene.children);
-
+  // 设置网格模型在三维空间中的位置坐标，默认是坐标原点
+  mesh.position.set(100, 10, 0);
+  scene.add(mesh);
   // 实例化一个透视投影相机对象
   const width = window.innerWidth; // 宽度
   const height = window.innerHeight; // 高度
   // 30:视场角度, width / height:Canvas画布宽高比, 1:近裁截面, 3000：远裁截面
 
   const camera = new THREE.PerspectiveCamera(60, width / height, 1, 6000);
-  camera.position.set(200, 200, 200);
-  // camera.position.set(800, 800, 800);
+  // camera.position.set(200, 200, 200);
+  camera.position.set(800, 800, 800);
   // camera.position.set(2000, 2000, 2000);
   // camera.lookAt(0, 0, 0);
   // camera.lookAt(1000, 0, 1000);
-  camera.lookAt(group.position);
+  camera.lookAt(mesh.position);
   const renderer = new THREE.WebGLRenderer({
     antialias: true
   });
@@ -117,7 +158,7 @@ const initRender = () => {
     // console.log('两帧渲染时间间隔(毫秒)', spt);
     // console.log('帧率FPS', 1000 / spt);
     renderer.render(scene, camera); // 执行渲染操作
-    group.rotateY(0.01); // 每次绕y轴旋转0.01弧度
+    // mesh.rotateY(0.01); // 每次绕y轴旋转0.01弧度
     requestAnimationFrame(render); // 请求再次执行渲染函数render，渲染下一帧
   }
   render();
