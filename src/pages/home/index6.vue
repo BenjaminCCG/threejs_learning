@@ -7,12 +7,12 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import Stats from 'three/addons/libs/stats.module.js';
 // 引入gltf模型加载库GLTFLoader.js
-// import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 const initRender = () => {
   // 创建3D场景对象Scene
   const scene = new THREE.Scene();
-  // const loader = new GLTFLoader();
+  const loader = new GLTFLoader();
   // 环境光设置
   const ambient = new THREE.AmbientLight(0xffffff, 0.4);
   scene.add(ambient);
@@ -37,52 +37,32 @@ const initRender = () => {
   // 平行光辅助对象
   const dirLightHelper = new THREE.DirectionalLightHelper(directionalLight, 5, 0xff0000);
   scene.add(dirLightHelper);
-  const textureCube = new THREE.CubeTextureLoader().load([
-    'https://cc-blog-admin.oss-cn-beijing.aliyuncs.com/image/2023-08-31/5f4a4a90-92f1-4546-a4ac-e886c2a26722.png',
-    'https://cc-blog-admin.oss-cn-beijing.aliyuncs.com/image/2023-08-27/9415aacd-ea17-4453-8da6-de3b9e06075b.png',
-    'https://cc-blog-admin.oss-cn-beijing.aliyuncs.com/image/2023-08-23/7a93d8b0-2d73-49bd-8aa1-f359e2c727d8.png',
-    'https://cc-blog-admin.oss-cn-beijing.aliyuncs.com/image/2023-08-20/db533276-ce41-4af8-bd8a-874cda2d4529.png',
-    'https://cc-blog-admin.oss-cn-beijing.aliyuncs.com/image/2023-08-18/7a16609f-12e6-40dc-8c5a-0dcb0c05792a.png',
-    'https://cc-blog-admin.oss-cn-beijing.aliyuncs.com/image/2023-08-17/a43cec36-9427-4e0a-95d2-be6c5fea22ac.webp'
-  ]);
+
   // 创建两个网格模型mesh1、mesh2
-  const geometry = new THREE.BoxGeometry(50, 50, 50);
+  // const geometry = new THREE.BoxGeometry(50, 50, 50);
 
   // const material = new THREE.MeshLambertMaterial({ side: THREE.DoubleSide, transparent: true });
-  const material = new THREE.MeshStandardMaterial({
-    metalness: 1.0,
-    roughness: 0.5,
-    envMap: textureCube, // 设置pbr材质环境贴图
-    envMapIntensity: 1
+  // const mesh = new THREE.Mesh(geometry, material);
+
+  loader.load('/DamagedHelmet.gltf', (gltf) => {
+    console.log('控制台查看加载gltf文件返回的对象结构', gltf);
+    console.log('gltf对象场景属性', gltf.scene);
+    // 返回的场景对象gltf.scene插入到threejs场景中
+    console.log('texture.flipY', texture.flipY);
+    const mesh = gltf.scene.children[0] as any; // 获取Mesh
+    console.log('.flipY', mesh.material.map.flipY);
+    mesh.material.map = texture; // 更换不同风格的颜色贴图
+    scene.add(gltf.scene);
   });
-
-  const mesh = new THREE.Mesh(geometry, material);
-
-  scene.environment = textureCube;
-  textureCube.colorSpace = THREE.SRGBColorSpace;
-  scene.add(mesh);
-
-  // loader.load('/DamagedHelmet.gltf', (gltf) => {
-  //   console.log('控制台查看加载gltf文件返回的对象结构', gltf);
-  //   console.log('gltf对象场景属性', gltf.scene);
-  //   // 返回的场景对象gltf.scene插入到threejs场景中
-  //   // console.log('texture.flipY', texture.flipY);
-  //   const mesh = gltf.scene.children[0] as any; // 获取Mesh
-  //   // console.log('.flipY', mesh.material.map.flipY);
-  //   mesh.material.metalness = 1;
-  //   mesh.material.roughness = 0.5;
-  //   mesh.material.envMap = textureCube;
-
-  //   mesh.material.map = texture; // 更换不同风格的颜色贴图
-  //   scene.add(gltf.scene);
-  // });
   // 实例化一个透视投影相机对象
   const width = window.innerWidth; // 宽度
   const height = window.innerHeight; // 高度
   // 30:视场角度, width / height:Canvas画布宽高比, 1:近裁截面, 3000：远裁截面
 
-  const camera = new THREE.PerspectiveCamera(60, width / height, 1, 6000);
-  camera.position.set(200, 200, 200);
+  const camera = new THREE.PerspectiveCamera(60, width / height, 0.5, 20);
+  camera.position.set(0.21, 0.26, 3.2);
+  camera.lookAt(100, 0, 0);
+  // camera.position.set(20, 20, 20);
   // camera.position.set(2000, 2000, 2000);
   // camera.lookAt(0, 0, 0);
   // camera.lookAt(10000, 10000, 1000);

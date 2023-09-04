@@ -6,6 +6,7 @@ import WindiCSS from 'vite-plugin-windicss';
 import AutoImport from 'unplugin-auto-import/vite';
 import Components from 'unplugin-vue-components/vite';
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers';
+import gltf from 'vite-plugin-gltf';
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, './env');
@@ -31,7 +32,8 @@ export default defineConfig(({ mode }) => {
         eslint: {
           lintCommand: 'eslint "./src/**/*.{ts,tsx,vue,js,jsx}"'
         }
-      })
+      }),
+      gltf()
     ],
     resolve: {
       alias: {
