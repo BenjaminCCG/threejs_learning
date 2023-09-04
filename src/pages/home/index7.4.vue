@@ -1,5 +1,13 @@
+<!--
+ * @Author: ChangCheng
+ * @Date: 2023-09-04 19:24:49
+ * @LastEditTime: 2023-09-04 19:24:54
+ * @LastEditors: ChangCheng
+ * @Description: 
+ * @FilePath: \threejs\src\pages\home\index copy.vue
+-->
 <template>
-  <div class="bg-blue-300"></div>
+  <div></div>
 </template>
 
 <script setup lang="ts">
@@ -16,7 +24,16 @@ const initRender = () => {
   // 环境光设置
   const ambient = new THREE.AmbientLight(0xffffff, 0.4);
   scene.add(ambient);
-
+  const texture = new THREE.TextureLoader().load(
+    'https://cc-blog-admin.oss-cn-beijing.aliyuncs.com/image/2023-08-31/5f4a4a90-92f1-4546-a4ac-e886c2a26722.png'
+  );
+  texture.colorSpace = THREE.SRGBColorSpace; // 默认值
+  // THREE.LinearEncoding变量在threejs内部表示数字3000
+  console.log('texture.encoding', texture.colorSpace);
+  // 修改为THREE.sRGBEncoding，
+  texture.colorSpace = THREE.SRGBColorSpace;
+  // THREE.sRGBEncoding变量在threejs内部表示数字3001
+  console.log('texture.encoding', texture.colorSpace);
   // 平行光
   const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
   // 设置光源的方向：通过光源position属性和目标指向对象的position属性计算
@@ -28,24 +45,45 @@ const initRender = () => {
   // 平行光辅助对象
   const dirLightHelper = new THREE.DirectionalLightHelper(directionalLight, 5, 0xff0000);
   scene.add(dirLightHelper);
-
+  const textureCube = new THREE.CubeTextureLoader().load([
+    'https://cc-blog-admin.oss-cn-beijing.aliyuncs.com/image/2023-08-31/5f4a4a90-92f1-4546-a4ac-e886c2a26722.png',
+    'https://cc-blog-admin.oss-cn-beijing.aliyuncs.com/image/2023-08-27/9415aacd-ea17-4453-8da6-de3b9e06075b.png',
+    'https://cc-blog-admin.oss-cn-beijing.aliyuncs.com/image/2023-08-23/7a93d8b0-2d73-49bd-8aa1-f359e2c727d8.png',
+    'https://cc-blog-admin.oss-cn-beijing.aliyuncs.com/image/2023-08-20/db533276-ce41-4af8-bd8a-874cda2d4529.png',
+    'https://cc-blog-admin.oss-cn-beijing.aliyuncs.com/image/2023-08-18/7a16609f-12e6-40dc-8c5a-0dcb0c05792a.png',
+    'https://cc-blog-admin.oss-cn-beijing.aliyuncs.com/image/2023-08-17/a43cec36-9427-4e0a-95d2-be6c5fea22ac.webp'
+  ]);
   // 创建两个网格模型mesh1、mesh2
-  const geometry = new THREE.PlaneGeometry(250, 250);
-  const material = new THREE.MeshLambertMaterial({
-    color: 0x00ffff,
-    side: THREE.DoubleSide
+  const geometry = new THREE.BoxGeometry(50, 50, 50);
+
+  // const material = new THREE.MeshLambertMaterial({ side: THREE.DoubleSide, transparent: true });
+  const material = new THREE.MeshStandardMaterial({
+    metalness: 1.0,
+    roughness: 0.5,
+    envMap: textureCube, // 设置pbr材质环境贴图
+    envMapIntensity: 1
   });
+
   const mesh = new THREE.Mesh(geometry, material);
 
-  const geometry2 = new THREE.PlaneGeometry(300, 300);
-  const material2 = new THREE.MeshLambertMaterial({
-    color: 0xff6666,
-    side: THREE.DoubleSide
-  });
-  const mesh2 = new THREE.Mesh(geometry2, material2);
-  mesh2.position.z = 1;
+  scene.environment = textureCube;
+  textureCube.colorSpace = THREE.SRGBColorSpace;
   scene.add(mesh);
-  scene.add(mesh2);
+
+  // loader.load('/DamagedHelmet.gltf', (gltf) => {
+  //   console.log('控制台查看加载gltf文件返回的对象结构', gltf);
+  //   console.log('gltf对象场景属性', gltf.scene);
+  //   // 返回的场景对象gltf.scene插入到threejs场景中
+  //   // console.log('texture.flipY', texture.flipY);
+  //   const mesh = gltf.scene.children[0] as any; // 获取Mesh
+  //   // console.log('.flipY', mesh.material.map.flipY);
+  //   mesh.material.metalness = 1;
+  //   mesh.material.roughness = 0.5;
+  //   mesh.material.envMap = textureCube;
+
+  //   mesh.material.map = texture; // 更换不同风格的颜色贴图
+  //   scene.add(gltf.scene);
+  // });
   // 实例化一个透视投影相机对象
   const width = window.innerWidth; // 宽度
   const height = window.innerHeight; // 高度
@@ -58,17 +96,11 @@ const initRender = () => {
   // camera.lookAt(10000, 10000, 1000);
   // camera.lookAt(mesh.position);
   const renderer = new THREE.WebGLRenderer({
-    antialias: true,
-    alpha: true,
-    // 想把canvas画布上内容下载到本地，需要设置为true
-    preserveDrawingBuffer: true,
-    // 设置对数深度缓冲区，优化深度冲突问题
-    logarithmicDepthBuffer: true
+    antialias: true
   });
   renderer.setSize(width, height);
   renderer.setPixelRatio(window.devicePixelRatio);
-  // renderer.setClearColor(0x444444, 0.3); // 设置背景颜色
-
+  renderer.setClearColor(0x444444, 1); // 设置背景颜色
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   // renderer.render(scene, camera);
   const axesHelper = new THREE.AxesHelper(100);
@@ -91,6 +123,10 @@ const initRender = () => {
 
   // const clock = new THREE.Clock();
   function render() {
+    // const spt = clock.getDelta() * 1000; // 毫秒
+    // console.log('两帧渲染时间间隔(毫秒)', spt);
+    // console.log('帧率FPS', 1000 / spt);
+
     renderer.render(scene, camera); // 执行渲染操作
     // mesh.rotateY(0.01); // 每次绕y轴旋转0.01弧度
     requestAnimationFrame(render); // 请求再次执行渲染函数render，渲染下一帧

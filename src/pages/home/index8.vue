@@ -1,3 +1,11 @@
+<!--
+ * @Author: ChangCheng
+ * @Date: 2023-09-04 19:58:41
+ * @LastEditTime: 2023-09-04 19:58:46
+ * @LastEditors: ChangCheng
+ * @Description: 
+ * @FilePath: \threejs\src\pages\home\index copy.vue
+-->
 <template>
   <div class="bg-blue-300"></div>
 </template>

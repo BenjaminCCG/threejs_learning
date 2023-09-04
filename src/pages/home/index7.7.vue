@@ -1,5 +1,13 @@
+<!--
+ * @Author: ChangCheng
+ * @Date: 2023-09-04 19:40:12
+ * @LastEditTime: 2023-09-04 19:40:17
+ * @LastEditors: ChangCheng
+ * @Description: 
+ * @FilePath: \threejs\src\pages\home\index copy.vue
+-->
 <template>
-  <div class="bg-blue-300"></div>
+  <div></div>
 </template>
 
 <script setup lang="ts">
@@ -30,22 +38,29 @@ const initRender = () => {
   scene.add(dirLightHelper);
 
   // 创建两个网格模型mesh1、mesh2
-  const geometry = new THREE.PlaneGeometry(250, 250);
-  const material = new THREE.MeshLambertMaterial({
-    color: 0x00ffff,
-    side: THREE.DoubleSide
+  const geometry = new THREE.BoxGeometry(50, 50, 50);
+  const textureCube = new THREE.CubeTextureLoader().load([
+    'https://cc-blog-admin.oss-cn-beijing.aliyuncs.com/image/2023-08-31/5f4a4a90-92f1-4546-a4ac-e886c2a26722.png',
+    'https://cc-blog-admin.oss-cn-beijing.aliyuncs.com/image/2023-08-27/9415aacd-ea17-4453-8da6-de3b9e06075b.png',
+    'https://cc-blog-admin.oss-cn-beijing.aliyuncs.com/image/2023-08-23/7a93d8b0-2d73-49bd-8aa1-f359e2c727d8.png',
+    'https://cc-blog-admin.oss-cn-beijing.aliyuncs.com/image/2023-08-20/db533276-ce41-4af8-bd8a-874cda2d4529.png',
+    'https://cc-blog-admin.oss-cn-beijing.aliyuncs.com/image/2023-08-18/7a16609f-12e6-40dc-8c5a-0dcb0c05792a.png',
+    'https://cc-blog-admin.oss-cn-beijing.aliyuncs.com/image/2023-08-17/a43cec36-9427-4e0a-95d2-be6c5fea22ac.webp'
+  ]);
+  // const material = new THREE.MeshLambertMaterial({ side: THREE.DoubleSide, transparent: true });
+  const material = new THREE.MeshPhysicalMaterial({
+    metalness: 0.0, // 玻璃非金属
+    roughness: 0.0, // 玻璃表面光滑
+    envMap: textureCube, // 环境贴图
+    envMapIntensity: 1.0, // 环境贴图对Mesh表面影响程度
+    transmission: 1.0, // 玻璃材质透光率，transmission替代opacity
+    ior: 1.5 // 折射率
   });
+
   const mesh = new THREE.Mesh(geometry, material);
 
-  const geometry2 = new THREE.PlaneGeometry(300, 300);
-  const material2 = new THREE.MeshLambertMaterial({
-    color: 0xff6666,
-    side: THREE.DoubleSide
-  });
-  const mesh2 = new THREE.Mesh(geometry2, material2);
-  mesh2.position.z = 1;
   scene.add(mesh);
-  scene.add(mesh2);
+
   // 实例化一个透视投影相机对象
   const width = window.innerWidth; // 宽度
   const height = window.innerHeight; // 高度
@@ -58,17 +73,11 @@ const initRender = () => {
   // camera.lookAt(10000, 10000, 1000);
   // camera.lookAt(mesh.position);
   const renderer = new THREE.WebGLRenderer({
-    antialias: true,
-    alpha: true,
-    // 想把canvas画布上内容下载到本地，需要设置为true
-    preserveDrawingBuffer: true,
-    // 设置对数深度缓冲区，优化深度冲突问题
-    logarithmicDepthBuffer: true
+    antialias: true
   });
   renderer.setSize(width, height);
   renderer.setPixelRatio(window.devicePixelRatio);
-  // renderer.setClearColor(0x444444, 0.3); // 设置背景颜色
-
+  renderer.setClearColor(0x444444, 1); // 设置背景颜色
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   // renderer.render(scene, camera);
   const axesHelper = new THREE.AxesHelper(100);
@@ -91,6 +100,10 @@ const initRender = () => {
 
   // const clock = new THREE.Clock();
   function render() {
+    // const spt = clock.getDelta() * 1000; // 毫秒
+    // console.log('两帧渲染时间间隔(毫秒)', spt);
+    // console.log('帧率FPS', 1000 / spt);
+
     renderer.render(scene, camera); // 执行渲染操作
     // mesh.rotateY(0.01); // 每次绕y轴旋转0.01弧度
     requestAnimationFrame(render); // 请求再次执行渲染函数render，渲染下一帧
