@@ -1,97 +1,168 @@
 <template>
-  <div class="bg-blue-300"></div>
+  <div></div>
 </template>
 
 <script setup lang="ts">
 import * as THREE from 'three';
+// 从threejs扩展库引入gui.js
+
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+// import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 import Stats from 'three/addons/libs/stats.module.js';
-// 引入gltf模型加载库GLTFLoader.js
-// import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+// 引入dat.gui.js的一个类GUI
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+// 引入渲染器通道RenderPass
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+// 引入OutlinePass通道
+import { OutlinePass } from 'three/addons/postprocessing/OutlinePass.js';
+
+// 伽马校正后处理Shader
+import { GammaCorrectionShader } from 'three/addons/shaders/GammaCorrectionShader.js';
+
+// ShaderPass功能：使用后处理Shader创建后处理通道
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+// FXAA抗锯齿Shader
+import { FXAAShader } from 'three/addons/shaders/FXAAShader.js';
+// SMAA抗锯齿通道
+import { SMAAPass } from 'three/addons/postprocessing/SMAAPass.js';
+
+// 引入UnrealBloomPass通道
+// import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+// 引入GlitchPass通道
+// import { GlitchPass } from 'three/addons/postprocessing/GlitchPass.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 const initRender = () => {
   // 创建3D场景对象Scene
   const scene = new THREE.Scene();
-  // const loader = new GLTFLoader();
-  // 环境光设置
-  const ambient = new THREE.AmbientLight(0xffffff, 0.4);
+  // const texture = new THREE.TextureLoader().load(
+  //   'https://cc-blog-admin.oss-cn-beijing.aliyuncs.com/image/2023-08-31/5f4a4a90-92f1-4546-a4ac-e886c2a26722.png'
+  // );
+
+  const ambient = new THREE.AmbientLight();
   scene.add(ambient);
 
-  // 平行光
-  const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-  // 设置光源的方向：通过光源position属性和目标指向对象的position属性计算
-  directionalLight.position.set(100, 100, 100);
-  // 方向光指向对象网格模型mesh，可以不设置，默认的位置是0,0,0
-  // directionalLight.target = mesh;
-  scene.add(directionalLight);
-
-  // 平行光辅助对象
-  const dirLightHelper = new THREE.DirectionalLightHelper(directionalLight, 5, 0xff0000);
-  scene.add(dirLightHelper);
-
-  // 创建两个网格模型mesh1、mesh2
-  const geometry = new THREE.PlaneGeometry(250, 250);
-  const material = new THREE.MeshLambertMaterial({
-    color: 0x00ffff,
-    side: THREE.DoubleSide
-  });
-  const mesh = new THREE.Mesh(geometry, material);
-
-  const geometry2 = new THREE.PlaneGeometry(300, 300);
-  const material2 = new THREE.MeshLambertMaterial({
-    color: 0xff6666,
-    side: THREE.DoubleSide
-  });
-  const mesh2 = new THREE.Mesh(geometry2, material2);
-  mesh2.position.z = 1;
-  scene.add(mesh);
-  scene.add(mesh2);
   // 实例化一个透视投影相机对象
   const width = window.innerWidth; // 宽度
   const height = window.innerHeight; // 高度
   // 30:视场角度, width / height:Canvas画布宽高比, 1:近裁截面, 3000：远裁截面
-
-  const camera = new THREE.PerspectiveCamera(60, width / height, 1, 6000);
-  camera.position.set(200, 200, 200);
-  // camera.position.set(2000, 2000, 2000);
-  // camera.lookAt(0, 0, 0);
-  // camera.lookAt(10000, 10000, 1000);
-  // camera.lookAt(mesh.position);
+  // const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.25, 3000);
+  // // camera.position.set(-1.8, 0.6, 2.7);
+  // camera.position.set(100, 100, 100);
+  const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.25, 20);
+  camera.position.set(-1.8, 0.6, 2.7);
   const renderer = new THREE.WebGLRenderer({
-    antialias: true,
-    alpha: true,
-    // 想把canvas画布上内容下载到本地，需要设置为true
-    preserveDrawingBuffer: true,
-    // 设置对数深度缓冲区，优化深度冲突问题
-    logarithmicDepthBuffer: true
+    antialias: true
   });
   renderer.setSize(width, height);
   renderer.setPixelRatio(window.devicePixelRatio);
-  // renderer.setClearColor(0x444444, 0.3); // 设置背景颜色
-
-  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.setClearColor(0x444444, 1); // 设置背景颜色
   // renderer.render(scene, camera);
+  // 设置渲染器，允许光源阴影渲染
+  renderer.shadowMap.enabled = true;
+
   const axesHelper = new THREE.AxesHelper(100);
   scene.add(axesHelper);
+
+  // 创建后处理对象EffectComposer，WebGL渲染器作为参数
+  const composer = new EffectComposer(renderer);
+  // 创建一个渲染器通道，场景和相机作为参数
+  const renderPass = new RenderPass(scene, camera);
+
+  // 设置renderPass通道
+  composer.addPass(renderPass);
+
+  // OutlinePass第一个参数v2的尺寸和canvas画布保持一致
+  const v2 = new THREE.Vector2(window.innerWidth, window.innerHeight);
+  // const v2 = new THREE.Vector2(800, 600);
+  const outlinePass = new OutlinePass(v2, scene, camera);
+  // canvas画布宽高度window.innerWidth, window.innerHeight
+  // const bloomPass = new UnrealBloomPass(v2, 1.5, 0.4, 0.85);
+  // const glitchPass = new GlitchPass();
+  // 模型描边颜色，默认白色
+  outlinePass.visibleEdgeColor.set(0xffff00);
+  // 高亮发光描边厚度
+  outlinePass.edgeThickness = 4;
+  // 高亮描边发光强度
+  outlinePass.edgeStrength = 6;
+  // 模型闪烁频率控制，默认0不闪烁
+  outlinePass.pulsePeriod = 2;
+
+  const geometry = new THREE.BoxGeometry(25, 25, 25);
+  geometry.translate(0, 12.5, 0);
+  // mesh顶部中心添加标注，顶部中心坐标是(0,100,0)
+
+  // 创建精灵材质对象SpriteMaterial
+  // const spriteMaterial = new THREE.SpriteMaterial({
+  //   map: texture // 设置精灵纹理贴图
+  // });
+  // 创建伽马校正通道
+  const gammaPass = new ShaderPass(GammaCorrectionShader);
+  composer.addPass(gammaPass);
+
+  // const material = new THREE.MeshPhongMaterial();
+
+  // 创建精灵模型对象，不需要几何体geometry参数
+  // const sprite = new THREE.Sprite(spriteMaterial);
+  // sprite.scale.set(10, 10, 1);
+  // const mesh = new THREE.Mesh(geometry, material);
   // scene.add(mesh);
+  // scene.add(sprite);
+  outlinePass.visibleEdgeColor.set(0xffff00);
+  // outlinePass.selectedObjects = [mesh, sprite];
+  composer.addPass(outlinePass);
+  // composer.addPass(bloomPass);
+
+  // composer.addPass(glitchPass);
+
+  const loader = new GLTFLoader();
+  loader.load('/DamagedHelmet.gltf', (gltf) => {
+    gltf.scene.traverse((obj: any) => {
+      if (obj.isMesh) {
+        outlinePass.selectedObjects.push(obj);
+      }
+    });
+
+    scene.add(gltf.scene);
+
+    renderer.render(scene, camera);
+  });
 
   // 当设置渲染循环可以不添加相机空间的change事件去重复render
 
   // eslint-disable-next-line no-new
-  const controls = new OrbitControls(camera, renderer.domElement);
+  new OrbitControls(camera, renderer.domElement);
 
-  // controls.target.set(2.17, -0.03, -0.13);
-  // update()函数内会执行camera.lookAt(controls.targe)
-  controls.update();
+  // controls.target.set(1000, 0, 1000);
+  //  // update()函数内会执行camera.lookAt(controls.targe)
+  // controls.update();
   // controls.addEventListener('change', () => {
   //   console.log('camera.position', camera.position);
-  //   console.log('controls.target', controls.target);
-  //   // renderer.render(scene, camera);
+
+  //   renderer.render(scene, camera);
   // });
+
+  const FXAAPass = new ShaderPass(FXAAShader);
+  // `.getPixelRatio()`获取`renderer.setPixelRatio()`设置的值
+  const pixelRatio = renderer.getPixelRatio(); // 获取设备像素比
+  // width、height是canva画布的宽高度
+  FXAAPass.uniforms.resolution.value.x = 1 / (width * pixelRatio);
+  FXAAPass.uniforms.resolution.value.y = 1 / (height * pixelRatio);
+  composer.addPass(FXAAPass);
+
+  // 获取.setPixelRatio()设置的设备像素比
+  // width、height是canva画布的宽高度
+  const smaaPass = new SMAAPass(width * pixelRatio, height * pixelRatio);
+  composer.addPass(smaaPass);
 
   // const clock = new THREE.Clock();
   function render() {
-    renderer.render(scene, camera); // 执行渲染操作
+    // const spt = clock.getDelta() * 1000; // 毫秒
+    // console.log('两帧渲染时间间隔(毫秒)', spt);
+    // console.log('帧率FPS', 1000 / spt);
+    // renderer.render(scene, camera); // 执行渲染操作
+
+    composer.render();
     // mesh.rotateY(0.01); // 每次绕y轴旋转0.01弧度
     requestAnimationFrame(render); // 请求再次执行渲染函数render，渲染下一帧
   }
