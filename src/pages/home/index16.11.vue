@@ -1,3 +1,11 @@
+<!--
+ * @Author: ChangCheng
+ * @Date: 2023-09-06 20:56:50
+ * @LastEditTime: 2023-09-06 20:56:55
+ * @LastEditors: ChangCheng
+ * @Description: 
+ * @FilePath: \threejs\src\pages\home\index copy.vue
+-->
 <template>
   <div class="flex absolute right-0 text-white">
     <div id="play" class="mr-1 cursor-pointer">播放</div>

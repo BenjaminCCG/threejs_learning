@@ -1,11 +1,16 @@
+<!--
+ * @Author: ChangCheng
+ * @Date: 2023-09-06 19:55:03
+ * @LastEditTime: 2023-09-06 19:55:08
+ * @LastEditors: ChangCheng
+ * @Description: 
+ * @FilePath: \threejs\src\pages\home\index copy.vue
+-->
 <template>
   <div class="flex absolute right-0 text-white">
     <div id="play" class="mr-1 cursor-pointer">播放</div>
     <div id="stop" class="mr-1 cursor-pointer">停止</div>
     <div id="bu" class="mr-1 cursor-pointer">暂停</div>
-    <div id="Idle" class="bu">休息</div>
-    <div id="Run" class="bu" style="margin-left: 10px">跑步</div>
-    <div id="Walk" class="bu" style="margin-left: 10px">走路</div>
   </div>
 </template>
 
@@ -30,72 +35,30 @@ const initRender = () => {
   scene.add(ambient);
 
   const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.25, 2000);
-  camera.position.set(5, 5, 5);
+  camera.position.set(100, 100, 100);
 
   const renderer = new THREE.WebGLRenderer();
   renderer.setSize(width, height);
 
   const axesHelper = new THREE.AxesHelper(100);
   scene.add(axesHelper);
-  const gui = new GUI();
 
   const loader = new GLTFLoader();
   loader.load('/Soldier.glb', (gltf) => {
-    console.log('🚀 ~ file: index.vue:40 ~ loader.load ~ gltf:', gltf);
     console.log(gltf.animations, 'xxx');
-    const bones = [] as any[];
-    gltf.scene.traverse((obj: any) => {
-      if (obj.isBone) {
-        console.log(obj, 'xxxx');
 
-        bones.push(obj);
-      }
-    });
-    // bones.forEach((item, index) => {
-    //   gui.add(item.rotation, 'x', 0, Math.PI / 3).name('关节' + index);
-    // });
     const mixer = new THREE.AnimationMixer(gltf.scene);
-    const IdleAction = mixer.clipAction(gltf.animations[0]);
-    const RunAction = mixer.clipAction(gltf.animations[1]);
-    // const clipAction2 = mixer.clipAction(gltf.animations[2]);
-    const WalkAction = mixer.clipAction(gltf.animations[3]);
-    // // 不循环播放
-    // clipAction.loop = THREE.LoopOnce;
-    // // 物体状态停留在动画结束的时候
-    // clipAction.clampWhenFinished = true;
-    gui.add(IdleAction, 'weight', 0, 1).name('IdleAction.weight');
-    gui.add(RunAction, 'weight', 0, 1).name('RunAction.weight');
-    gui.add(WalkAction, 'weight', 0, 1).name('WalkAction.weight');
+    const clipAction = mixer.clipAction(gltf.animations[0]);
 
-    let ActionState = IdleAction; // 当前处于播放状态的动画动作对象
-    document.getElementById('Idle')!.addEventListener('click', () => {
-      ActionState.stop(); // 播放状态动画终止
-      IdleAction.play();
-      ActionState = IdleAction;
-    });
-    document.getElementById('Run')!.addEventListener('click', () => {
-      ActionState.stop(); // 播放状态动画终止
-      RunAction.play();
-      ActionState = RunAction;
-    });
-    document.getElementById('Walk')!.addEventListener('click', () => {
-      ActionState.stop(); // 播放状态动画终止
-      WalkAction.play();
-      ActionState = WalkAction;
-    });
+    // 不循环播放
+    clipAction.loop = THREE.LoopOnce;
+    // 物体状态停留在动画结束的时候
+    clipAction.clampWhenFinished = true;
 
-    IdleAction.play();
-    IdleAction.play();
-    WalkAction.play();
-    // clipAction2.play();
-
+    clipAction.play();
     gltf.scene.rotateY(-Math.PI / 2);
 
     scene.add(gltf.scene);
-
-    // 骨骼辅助
-    const skeletonHelper = new THREE.SkeletonHelper(gltf.scene);
-    scene.add(skeletonHelper);
 
     const clock = new THREE.Clock();
     function loop() {
@@ -113,11 +76,7 @@ const initRender = () => {
     renderer.render(scene, camera);
   });
 
-  const geometry = new THREE.BoxGeometry(50, 50, 50);
-  const target1 = new THREE.BoxGeometry(50, 200, 50).attributes.position;
-  const target2 = new THREE.BoxGeometry(10, 50, 10).attributes.position;
-  geometry.morphAttributes.position = [target1, target2];
-
+  const geometry = new THREE.BoxGeometry(10, 10, 10);
   const material = new THREE.MeshBasicMaterial({
     color: 0xff0000,
     side: THREE.DoubleSide,
@@ -126,27 +85,17 @@ const initRender = () => {
   });
   const mesh = new THREE.Mesh(geometry, material);
 
-  // mesh.morphTargetInfluences![0] = 0;
-
-  // mesh.morphTargetInfluences![1] = 0.5;
-
   mesh.name = 'Box';
 
-  // const times = [0, 3, 6];
+  const times = [0, 3, 6];
 
-  // const values = [0, 0, 0, 100, 0, 0, 0, 0, 100];
+  const values = [0, 0, 0, 100, 0, 0, 0, 0, 100];
 
-  // const posKF = new THREE.KeyframeTrack('Box.position', times, values);
+  const posKF = new THREE.KeyframeTrack('Box.position', times, values);
 
-  // const colorKF = new THREE.KeyframeTrack('Box.material.color', [2, 5], [1, 0, 0, 0, 0, 1]);
+  const colorKF = new THREE.KeyframeTrack('Box.material.color', [2, 5], [1, 0, 0, 0, 0, 1]);
 
-  const KF1 = new THREE.KeyframeTrack('Box.morphTargetInfluences[0]', [0, 5], [0, 1]);
-
-  const KF2 = new THREE.KeyframeTrack('Box.morphTargetInfluences[1]', [5, 10], [0, 1]);
-
-  // const clip = new THREE.AnimationClip('test', 6, [posKF, colorKF]);
-
-  const clip = new THREE.AnimationClip('t', 10, [KF1, KF2]);
+  const clip = new THREE.AnimationClip('test', 6, [posKF, colorKF]);
 
   const mixer = new THREE.AnimationMixer(mesh);
 
@@ -156,28 +105,10 @@ const initRender = () => {
   // clipAction.paused = true;
 
   // clip.duration = 5;
+  const gui = new GUI();
   gui.domElement.style.top = '30px';
   gui.add(clipAction, 'timeScale', 0, 6).name('播放速度');
   gui.add(clipAction, 'time', 0, 6).step(0.1).name('进度条');
-
-  const obj = {
-    t1: 0,
-    t2: 0
-  };
-
-  gui
-    .add(obj, 't1', 0, 1)
-    .name('变形目标1')
-    .onChange((v: number) => {
-      mesh.morphTargetInfluences![0] = v;
-    });
-
-  gui
-    .add(obj, 't2', 0, 1)
-    .name('变形目标2')
-    .onChange((v: number) => {
-      mesh.morphTargetInfluences![1] = v;
-    });
 
   clipAction.play();
   clipAction.loop = THREE.LoopOnce;
@@ -217,34 +148,8 @@ const initRender = () => {
   }
   loop();
 
-  // scene.add(mesh);
+  scene.add(mesh);
 
-  const Bone1 = new THREE.Bone();
-  const Bone2 = new THREE.Bone();
-  const Bone3 = new THREE.Bone();
-
-  Bone1.add(Bone2);
-  Bone2.add(Bone3);
-
-  Bone2.position.y = 60;
-  Bone3.position.y = 30;
-
-  Bone1.position.set(50, 0, 50);
-  // 骨骼关节旋转
-  Bone1.rotateX(Math.PI / 6);
-  Bone2.rotateX(Math.PI / 6);
-
-  // 骨骼关节可以和普通网格模型一样作为其他模型子对象，添加到场景中
-  const group = new THREE.Group();
-  group.add(Bone1);
-
-  // scene.add(group);
-
-  // SkeletonHelper会可视化参数模型对象所包含的所有骨骼关节
-  const skeletonHelper = new THREE.SkeletonHelper(group);
-  group.add(skeletonHelper);
-  gui.add(Bone1.rotation, 'x', 0, Math.PI / 3).name('关节1');
-  gui.add(Bone2.rotation, 'x', 0, Math.PI / 3).name('关节2');
   // eslint-disable-next-line no-new
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.update();
