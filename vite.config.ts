@@ -31,7 +31,8 @@ export default defineConfig(({ mode }) => {
         // vueTsc: true,
         eslint: {
           lintCommand: 'eslint "./src/**/*.{ts,tsx,vue,js,jsx}"'
-        }
+        },
+        overlay: false
       }),
       gltf()
     ],
