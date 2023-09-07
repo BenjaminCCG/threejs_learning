@@ -26,6 +26,7 @@
     }
   },
   "dependencies": {
+    "@tweenjs/tween.js": "^18",
     "@types/three": "^0.155.1",
     "pinia": "^2.1.6",
     "postcss-preset-env": "^9.1.0",
