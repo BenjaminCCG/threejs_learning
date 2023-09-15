@@ -27,7 +27,7 @@ const initRender = () => {
 
   const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
 
-  camera.position.set(202, 123, 125);
+  camera.position.set(0, 0, 350);
   camera.lookAt(0, 0, 0);
 
   // const axesHelper = new THREE.AxesHelper(100);
@@ -61,7 +61,7 @@ const initRender = () => {
     // gltf = gltf.scene;
     // gltf.scene.rotateY(Math.PI);
     function rotate() {
-      gltf.scene.rotateY(0.01);
+      gltf.scene.rotateY(-0.01);
       requestAnimationFrame(rotate);
     }
     rotate();
@@ -84,26 +84,30 @@ const initRender = () => {
   // geometry.rotateY(Math.PI / (3 / 4));
   // geometry.translate(0, -100, 0);
   const mesh = new THREE.Line(geometry, material);
-  const axesHelper2 = new THREE.AxesHelper(20);
+  // const axesHelper2 = new THREE.AxesHelper(20);
   // mesh.add(axesHelper2);
   // mesh.translateY(-100);
-  mesh.rotateX(Math.PI / 2);
+  // mesh.rotateX(Math.PI / 2);
   mesh.rotateZ(Math.PI * 0.7);
-
+  // mesh.position.z += 100;
   const div = document.createElement('div');
   div.innerHTML = '720';
   div.style.color = '#fff';
   const tag = new CSS3DObject(div);
-  const pos = new THREE.Vector3();
-  mesh.getWorldPosition(pos);
-  tag.position.copy(pos);
-
-  tag.add(axesHelper2);
+  // tag.position.copy(pos);
+  const axesHelper3 = new THREE.AxesHelper(20);
+  tag.add(axesHelper3);
+  tag.position.y += 80;
   // tag.rotateZ(Math.PI / 2);
-  tag.position.z += 80;
-  mesh.add(tag);
-  scene.add(mesh);
-
+  // tag.position.z += 80;
+  // mesh.add(tag);
+  // scene.add(mesh);
+  tag.rotateX((Math.PI * 3) / 2);
+  const group = new THREE.Group();
+  group.add(mesh, tag);
+  group.rotateX(Math.PI / 2);
+  group.position.y -= 100;
+  scene.add(group);
   const labelRenderer = new CSS3DRenderer();
   labelRenderer.setSize(window.innerWidth, window.innerHeight);
   labelRenderer.domElement.style.position = 'absolute';
@@ -114,7 +118,8 @@ const initRender = () => {
   document.body.appendChild(labelRenderer.domElement);
 
   function render() {
-    mesh.rotateZ(0.01);
+    group.rotateZ(0.01);
+    // mesh.rotateZ(0.01);
     // tag.rotateY(0.01);
     labelRenderer.render(scene, camera);
     renderer.render(scene, camera); // 执行渲染操作
