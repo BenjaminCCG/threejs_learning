@@ -17,6 +17,8 @@ loader.load('/model/手机.glb', (gltf) => {
   //     });
   //   }
   // });
+  const frontObject3D = gltf.scene.getObjectByName('后置摄像头位置');
+  console.log(frontObject3D);
   const textureCube = new THREE.CubeTextureLoader()
     .setPath('/model/envMap/')
     .load(['px.jpg', 'nx.jpg', 'py.jpg', 'ny.jpg', 'pz.jpg', 'nz.jpg']);
