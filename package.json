@@ -12,9 +12,12 @@
     "commit": "git-cz"
   },
   "lint-staged": {
-    "*.{vue,js,ts,jsx,tsx}": [
-      "pnpm lint",
-      "pnpm prettier"
+    "*.{js,vue,ts,jsx,tsx}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "*.{html,css,less,scss,md}": [
+      "prettier --write"
     ]
   },
   "config": {
@@ -31,7 +34,7 @@
     "pinia": "^2.1.6",
     "postcss-preset-env": "^9.1.0",
     "prettier": "^3.0.0",
-    "three": "0.148.0",
+    "three": "^0.156.1",
     "vite-plugin-gltf": "^3.1.0",
     "vue": "^3.3.4",
     "vue-router": "4",
