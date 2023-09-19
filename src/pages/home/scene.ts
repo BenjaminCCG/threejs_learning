@@ -3,6 +3,7 @@ import { model } from './model';
 
 const scene = new THREE.Scene();
 scene.add(model);
+
 const ambient = new THREE.AmbientLight(0xffffff, 1);
 scene.add(ambient);
 
