@@ -22,4 +22,4 @@ const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.8);
 directionalLight2.position.set(-400, -200, -300);
 scene.add(directionalLight2);
 
-export { scene };
+export { scene, ambient, directionalLight1, directionalLight2 };

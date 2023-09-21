@@ -1,14 +1,17 @@
 /* eslint-disable guard-for-in */
 import * as THREE from 'three';
-import * as dat from 'dat.gui';
+// import * as dat from 'dat.gui';
+
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { camera } from './render';
 import TWEEN from '@tweenjs/tween.js';
-
+import { play } from './audio';
 import { createSprite } from './sprite';
+import { lensflare1, lensflare2 } from './carLight';
+import GUI from 'three/examples/jsm/libs/lil-gui.module.min.js';
 const loader = new GLTFLoader();
 const model = new THREE.Group();
-const gui = new dat.GUI({ width: 300 });
+const gui = new GUI({ width: 300 });
 
 const material = {
   metalness: 1,
@@ -66,6 +69,11 @@ loader.load('/model2/轿车.glb', (glft) => {
       obj.material.envMap = textureCube;
     }
   });
+  const light1 = glft.scene.getObjectByName('镜头光晕1');
+  const light2 = glft.scene.getObjectByName('镜头光晕2');
+  light1?.add(lensflare1);
+  light2?.add(lensflare2);
+
   const tagNameArr = ['右前光标', '右后光标', '左前光标', '左后光标', '后备箱光标'];
   const doorNameArr = [
     {
@@ -115,11 +123,18 @@ loader.load('/model2/轿车.glb', (glft) => {
 
   // const mesh1 = glft.scene.getObjectByName('轮胎03')!;
 
-  const doorMove = (obj: THREE.Object3D, k: string, rotate: number) => {
+  // eslint-disable-next-line max-params
+  const doorMove = (obj: THREE.Object3D, k: string, rotate: number, open: boolean) => {
     new TWEEN.Tween(obj.rotation)
       .to({ [k]: rotate }, 1000)
       .easing(TWEEN.Easing.Quadratic.Out)
-      .start(); // 启动动画
+      .start()
+      .onStart(() => {
+        open && play(true);
+      })
+      .onComplete(() => {
+        !open && play(false);
+      }); // 启动动画
   };
   addEventListener('click', (event) => {
     const px = event.clientX;
@@ -142,7 +157,7 @@ loader.load('/model2/轿车.glb', (glft) => {
           //   .to({ y: doorNameArr[index].rotate }, 1000)
           //   .easing(TWEEN.Easing.Quadratic.Out)
           //   .start();
-          doorMove(mesh, 'y', doorNameArr[index].rotate);
+          doorMove(mesh, 'y', doorNameArr[index].rotate, true);
         } else {
           doorNameArr[index].click = false;
           // mesh?.rotateY(-doorNameArr[index].rotate);
@@ -150,7 +165,8 @@ loader.load('/model2/轿车.glb', (glft) => {
           //   .to({ y: mesh.rotation.y - doorNameArr[index].rotate }, 1000)
           //   .easing(TWEEN.Easing.Quadratic.Out)
           //   .start(); // 启动动画
-          doorMove(mesh, 'y', mesh.rotation.y - doorNameArr[index].rotate);
+
+          doorMove(mesh, 'y', mesh.rotation.y - doorNameArr[index].rotate, false);
         }
       } else {
         if (!doorNameArr[index].click) {
@@ -160,7 +176,7 @@ loader.load('/model2/轿车.glb', (glft) => {
           //   .to({ z: doorNameArr[index].rotate }, 1000)
           //   .easing(TWEEN.Easing.Quadratic.Out)
           //   .start(); // 启动动画
-          doorMove(mesh, 'z', doorNameArr[index].rotate);
+          doorMove(mesh, 'z', doorNameArr[index].rotate, true);
         } else {
           doorNameArr[index].click = false;
           // mesh?.rotateZ(-doorNameArr[index].rotate);
@@ -168,7 +184,7 @@ loader.load('/model2/轿车.glb', (glft) => {
           //   .to({ z: mesh.rotation.z - doorNameArr[index].rotate }, 1000)
           //   .easing(TWEEN.Easing.Quadratic.Out)
           //   .start(); // 启动动画
-          doorMove(mesh, 'z', mesh.rotation.z - doorNameArr[index].rotate);
+          doorMove(mesh, 'z', mesh.rotation.z - doorNameArr[index].rotate, false);
         }
       }
     }
