@@ -1,19 +1,18 @@
-// import { group, group2 } from './model';
-import { model } from './model';
+import { renderer, camera } from './render';
 import { scene } from './scene';
-import { renderer, camera, labelRenderer } from './render';
-
-const bool = ref(true);
+// import './gui';
 function render() {
-  // group.rotateY(-0.01);
-  // group2.rotateZ(0.01);
-  // mesh.rotateZ(0.01);
-  // tag.rotateY(0.01);
-  if (bool.value) model.rotateY(0.005);
-  labelRenderer.render(scene, camera);
+  scene.rotateY(0.001);
   renderer.render(scene, camera); // 执行渲染操作
   requestAnimationFrame(render); // 请求再次执行渲染函数render，渲染下一帧
 }
 render();
+window.onresize = function () {
+  renderer.setSize(window.innerWidth, window.innerHeight);
 
-export { renderer, labelRenderer, bool };
+  camera.aspect = window.innerWidth / window.innerHeight;
+
+  camera.updateProjectionMatrix();
+};
+
+export { renderer };
